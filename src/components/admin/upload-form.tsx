@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -5,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Sparkles, UploadCloud } from "lucide-react";
+import { addDoc, collection } from "firebase/firestore";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -33,38 +35,68 @@ import {
     SelectValue,
 } from "../ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useFirestore } from "@/firebase";
 
 const formSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters.").max(100),
   description: z.string().min(10, "Description must be at least 10 characters."),
-  category: z.enum(["anime", "movie"]),
-  thumbnail: z.any().refine(file => file?.length == 1, "Thumbnail is required."),
-  heroPoster: z.any().optional(),
+  type: z.enum(["anime", "movie"]),
+  year: z.coerce.number().min(1900).max(new Date().getFullYear() + 1),
+  rating: z.coerce.number().min(0).max(10).optional(),
+  duration: z.string().optional(),
+  genre: z.string(),
+  tags: z.string(),
+  posterUrl: z.string().url(),
+  thumbnailUrl: z.string().url(),
+  heroUrl: z.string().url().optional(),
   videoUrl: z.string().url("Please enter a valid URL."),
 });
 
+type FormValues = z.infer<typeof formSchema>;
+
 export default function UploadForm() {
     const { toast } = useToast();
+    const firestore = useFirestore();
 
-    const form = useForm<z.infer<typeof formSchema>>({
+    const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             title: "",
             description: "",
             videoUrl: "",
-            category: "movie",
-            thumbnail: null,
-            heroPoster: null,
+            type: "movie",
+            year: new Date().getFullYear(),
+            genre: "",
+            tags: "",
+            posterUrl: "",
+            thumbnailUrl: "",
+            heroUrl: "",
+            duration: "",
+            rating: 0,
         },
     });
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        console.log(values);
-        toast({
-            title: "Upload Submitted",
-            description: "Content has been successfully submitted for processing.",
-        });
-        form.reset();
+    async function onSubmit(values: FormValues) {
+        try {
+            const contentCollection = collection(firestore, 'content');
+            await addDoc(contentCollection, {
+                ...values,
+                genre: values.genre.split(',').map(g => g.trim()),
+                tags: values.tags.split(',').map(t => t.trim()),
+            });
+            toast({
+                title: "Content Uploaded",
+                description: `${values.title} has been successfully added.`,
+            });
+            form.reset();
+        } catch (error) {
+            console.error("Error adding document: ", error);
+            toast({
+                variant: 'destructive',
+                title: "Upload Failed",
+                description: "There was an error uploading the content.",
+            });
+        }
     }
     
     function onAutoFetch() {
@@ -81,18 +113,6 @@ export default function UploadForm() {
             });
         }, 2000);
     }
-
-    // A ref for the file inputs to reset them
-    const thumbnailRef = React.useRef<HTMLInputElement>(null);
-    const heroPosterRef = React.useRef<HTMLInputElement>(null);
-
-    React.useEffect(() => {
-      if (form.formState.isSubmitSuccessful) {
-        form.reset();
-        if (thumbnailRef.current) thumbnailRef.current.value = "";
-        if (heroPosterRef.current) heroPosterRef.current.value = "";
-      }
-    }, [form.formState, form]);
 
     return (
         <Card className="border-white/10 bg-card/80 backdrop-blur-lg">
@@ -141,11 +161,10 @@ export default function UploadForm() {
                             </Button>
                         </div>
                        
-
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                             <FormField
+                            <FormField
                                 control={form.control}
-                                name="category"
+                                name="type"
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Category</FormLabel>
@@ -179,40 +198,124 @@ export default function UploadForm() {
                             />
                         </div>
 
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                             <FormField
                                 control={form.control}
-                                name="thumbnail"
-                                render={({ field: { onChange, value, ...rest }}) => (
+                                name="year"
+                                render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Thumbnail Image</FormLabel>
+                                    <FormLabel>Year</FormLabel>
                                     <FormControl>
-                                        <Input type="file" onChange={e => onChange(e.target.files)} {...rest} ref={thumbnailRef} />
+                                        <Input type="number" {...field} />
                                     </FormControl>
-                                    <FormDescription>16:9 aspect ratio recommended.</FormDescription>
                                     <FormMessage />
                                 </FormItem>
                                 )}
                             />
                             <FormField
                                 control={form.control}
-                                name="heroPoster"
-                                render={({ field: { onChange, value, ...rest } }) => (
+                                name="rating"
+                                render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Hero Poster (Optional)</FormLabel>
+                                    <FormLabel>Rating</FormLabel>
                                     <FormControl>
-                                         <Input type="file" onChange={e => onChange(e.target.files)} {...rest} ref={heroPosterRef} />
+                                        <Input type="number" step="0.1" {...field} />
                                     </FormControl>
-                                     <FormDescription>Wide aspect ratio for hero sections.</FormDescription>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="duration"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Duration</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="e.g., 2h 30m" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                        </div>
+
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <FormField
+                                control={form.control}
+                                name="genre"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Genre</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Action, Fantasy, Adventure" {...field} />
+                                    </FormControl>
+                                     <FormDescription>Comma-separated genres.</FormDescription>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="tags"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Tags</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="demons, sword fight" {...field} />
+                                    </FormControl>
+                                     <FormDescription>Comma-separated tags.</FormDescription>
                                     <FormMessage />
                                 </FormItem>
                                 )}
                             />
                         </div>
                         
-                        <Button type="submit" size="lg">
+                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            <FormField
+                                control={form.control}
+                                name="thumbnailUrl"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Thumbnail URL</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="https://..." {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="posterUrl"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Poster URL</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="https://..." {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                           <FormField
+                                control={form.control}
+                                name="heroUrl"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Hero URL (Optional)</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="https://..." {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                        </div>
+
+                        <Button type="submit" size="lg" disabled={form.formState.isSubmitting}>
                             <UploadCloud className="w-4 h-4 mr-2" />
-                            Save and Upload
+                            {form.formState.isSubmitting ? 'Uploading...' : 'Save and Upload'}
                         </Button>
                     </form>
                 </Form>

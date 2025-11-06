@@ -8,22 +8,35 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import type { Content } from '@/lib/types';
 import { Badge } from './ui/badge';
+import { Skeleton } from './ui/skeleton';
 
 type HeroSectionProps = {
-  content: Content;
+  content: Content | null;
+  loading?: boolean;
 };
 
-export default function HeroSection({ content }: HeroSectionProps) {
+export default function HeroSection({ content, loading }: HeroSectionProps) {
+  if (loading) {
+    return (
+      <div className="relative h-[60vh] md:h-[85vh] w-full">
+        <Skeleton className="absolute inset-0" />
+      </div>
+    )
+  }
+
+  if (!content) {
+    return null; // Or a placeholder
+  }
+
   return (
     <div className="relative h-[60vh] md:h-[85vh] w-full">
       <div className="absolute inset-0">
         <Image
-          src={content.hero?.imageUrl ?? content.poster.imageUrl}
+          src={content.heroUrl ?? content.posterUrl}
           alt={`Hero image for ${content.title}`}
           fill
           priority
           className="object-cover"
-          data-ai-hint={content.hero?.imageHint ?? content.poster.imageHint}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent" />

@@ -1,5 +1,3 @@
-import type { ImagePlaceholder } from './placeholder-images';
-
 export type Content = {
   id: string;
   title: string;
@@ -10,7 +8,8 @@ export type Content = {
   rating?: number;
   duration?: string;
   tags: string[];
-  poster: ImagePlaceholder;
-  thumbnail: ImagePlaceholder;
-  hero?: ImagePlaceholder;
+  posterUrl: string;
+  thumbnailUrl: string;
+  heroUrl?: string;
+  videoUrl: string;
 };

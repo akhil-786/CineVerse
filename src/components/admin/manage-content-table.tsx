@@ -1,3 +1,5 @@
+'use client';
+
 import Image from 'next/image';
 import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import {
@@ -15,7 +17,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { contentData } from '@/lib/mock-data';
 import { Badge } from '../ui/badge';
 import {
   DropdownMenu,
@@ -24,8 +25,38 @@ import {
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
 import { Button } from '../ui/button';
+import { useCollection } from '@/firebase';
+import type { Content } from '@/lib/types';
+import { deleteDoc, doc } from 'firebase/firestore';
+import { useFirestore } from '@/firebase';
+import { useToast } from '@/hooks/use-toast';
 
 export default function ManageContentTable() {
+    const { data: contentData, loading, error } = useCollection<Content>('content');
+    const firestore = useFirestore();
+    const { toast } = useToast();
+
+    const handleDelete = async (id: string) => {
+        if (!confirm('Are you sure you want to delete this item?')) return;
+        try {
+            await deleteDoc(doc(firestore, 'content', id));
+            toast({
+                title: 'Content Deleted',
+                description: 'The content has been successfully deleted.',
+            });
+        } catch (error) {
+            console.error('Error deleting document: ', error);
+            toast({
+                variant: 'destructive',
+                title: 'Error',
+                description: 'There was an error deleting the content.',
+            });
+        }
+    };
+
+    if (loading) return <p>Loading content...</p>;
+    if (error) return <p>Error: {error.message}</p>;
+
     return (
         <Card className="border-white/10 bg-card/80 backdrop-blur-lg">
             <CardHeader>
@@ -56,7 +87,7 @@ export default function ManageContentTable() {
                                         alt={item.title}
                                         className="aspect-square rounded-md object-cover"
                                         height="64"
-                                        src={item.thumbnail.imageUrl}
+                                        src={item.thumbnailUrl}
                                         width="64"
                                     />
                                 </TableCell>
@@ -78,7 +109,9 @@ export default function ManageContentTable() {
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
                                             <DropdownMenuItem><Pencil className="w-4 h-4 mr-2" />Edit</DropdownMenuItem>
-                                            <DropdownMenuItem className="text-destructive"><Trash2 className="w-4 h-4 mr-2" />Delete</DropdownMenuItem>
+                                            <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(item.id)}>
+                                                <Trash2 className="w-4 h-4 mr-2" />Delete
+                                            </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </TableCell>

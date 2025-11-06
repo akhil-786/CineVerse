@@ -1,0 +1,26 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Deny all reads and writes by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Allow public read access to content
+    match /content/{contentId} {
+      allow read: if true;
+      allow create, update, delete: if request.auth != null; // Allow signed-in users to manage content
+    }
+
+    // Allow users to manage their own profile and watchlist
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      match /watchlist/{contentId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+  }
+}

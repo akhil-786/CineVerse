@@ -1,5 +1,11 @@
+'use client';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+import * as React from 'react';
+import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, User } from 'firebase/auth';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -12,13 +18,72 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Logo from '@/components/ui/logo';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/firebase';
+
+const formSchema = z.object({
+  email: z.string().email({ message: 'Please enter a valid email address.' }),
+  password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
+});
 
 export default function AuthPage() {
+  const auth = useAuth();
+  const router = useRouter();
+  const { toast } = useToast();
+  const [user, setUser] = React.useState<User | null>(null);
+
+  React.useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        router.push('/');
+      } else {
+        setUser(null);
+      }
+    });
+    return () => unsubscribe();
+  }, [auth, router]);
+  
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
+
+  const handleEmailLogin = async (values: z.infer<typeof formSchema>) => {
+    try {
+      await signInWithEmailAndPassword(auth, values.email, values.password);
+      toast({ title: 'Login Successful', description: 'Welcome back!' });
+      router.push('/');
+    } catch (error: any) {
+      toast({ variant: 'destructive', title: 'Login Failed', description: error.message });
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+      toast({ title: 'Login Successful', description: 'Welcome back!' });
+      router.push('/');
+    } catch (error: any) {
+      toast({ variant: 'destructive', title: 'Login Failed', description: error.message });
+    }
+  };
+
+
   const GoogleIcon = () => (
     <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
       <path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 126 23.4 172.9 61.9l-76.2 76.2c-27.7-26.1-66.9-42.3-111.7-42.3-90.2 0-163.4 73.2-163.4 163.4s73.2 163.4 163.4 163.4c74.1 0 134.4-49.4 152.1-115.1H248v-96.2h239.9c4.9 26.3 7.9 54.1 7.9 82.9z"></path>
     </svg>
   );
+
+  if (user) {
+    return null; // Or a loading spinner
+  }
 
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-8rem)] py-12">
@@ -31,36 +96,55 @@ export default function AuthPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="m@example.com"
-                required
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleEmailLogin)} className="grid gap-4">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem className="grid gap-2">
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="email"
+                        placeholder="m@example.com"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <div className="grid gap-2">
-              <div className="flex items-center">
-                <Label htmlFor="password">Password</Label>
-                <Link
-                  href="#"
-                  className="ml-auto inline-block text-sm underline"
-                >
-                  Forgot your password?
-                </Link>
-              </div>
-              <Input id="password" type="password" required />
-            </div>
-            <Button type="submit" className="w-full bg-primary hover:bg-primary/80">
-              Login
-            </Button>
-            <Button variant="outline" className="w-full">
-              <GoogleIcon />
-              Login with Google
-            </Button>
-          </div>
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem className="grid gap-2">
+                    <div className="flex items-center">
+                      <FormLabel>Password</FormLabel>
+                      <Link
+                        href="#"
+                        className="ml-auto inline-block text-sm underline"
+                      >
+                        Forgot your password?
+                      </Link>
+                    </div>
+                    <FormControl>
+                      <Input type="password" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit" className="w-full bg-primary hover:bg-primary/80">
+                Login
+              </Button>
+            </form>
+          </Form>
+          <Button variant="outline" className="w-full mt-4" onClick={handleGoogleLogin}>
+            <GoogleIcon />
+            Login with Google
+          </Button>
           <div className="mt-4 text-center text-sm">
             Don&apos;t have an account?{' '}
             <Link href="#" className="underline">

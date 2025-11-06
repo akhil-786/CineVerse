@@ -1,3 +1,4 @@
+'use client';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import type { Content } from '@/lib/types';
@@ -9,17 +10,20 @@ import {
   CarouselPrevious,
 } from '@/components/ui/carousel';
 import ContentCard from './content-card';
+import { Skeleton } from './ui/skeleton';
 
 type ContentCarouselProps = {
   title: string;
   content: Content[];
   viewAllHref?: string;
+  loading?: boolean;
 };
 
 export default function ContentCarousel({
   title,
   content,
   viewAllHref,
+  loading = false,
 }: ContentCarouselProps) {
   return (
     <section>
@@ -38,22 +42,36 @@ export default function ContentCarousel({
       <Carousel
         opts={{
           align: 'start',
-          loop: true,
+          loop: false,
         }}
         className="w-full"
       >
         <CarouselContent>
-          {content.map((item, index) => (
-            <CarouselItem
-              key={index}
-              className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5 xl:basis-1/6"
-            >
-              <ContentCard content={item} />
-            </CarouselItem>
-          ))}
+          {loading ? (
+              Array.from({ length: 6 }).map((_, index) => (
+                  <CarouselItem key={index} className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5 xl:basis-1/6">
+                      <div className="aspect-[2/3] w-full">
+                          <Skeleton className="w-full h-full rounded-xl" />
+                      </div>
+                  </CarouselItem>
+              ))
+          ) : (
+            content.map((item, index) => (
+              <CarouselItem
+                key={item.id}
+                className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5 xl:basis-1/6"
+              >
+                <ContentCard content={item} />
+              </CarouselItem>
+            ))
+          )}
         </CarouselContent>
-        <CarouselPrevious className="hidden md:flex" />
-        <CarouselNext className="hidden md:flex" />
+        {!loading && content.length > 5 && (
+            <>
+                <CarouselPrevious className="hidden md:flex" />
+                <CarouselNext className="hidden md:flex" />
+            </>
+        )}
       </Carousel>
     </section>
   );

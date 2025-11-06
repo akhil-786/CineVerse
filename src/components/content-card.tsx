@@ -52,7 +52,7 @@ export default function ContentCard({
         transition={{ duration: 0.3 }}
       >
         <Image
-          src={aspectRatio === 'portrait' ? content.poster.imageUrl : content.thumbnail.imageUrl}
+          src={aspectRatio === 'portrait' ? content.posterUrl : content.thumbnailUrl}
           alt={content.title}
           width={width ?? (aspectRatio === 'portrait' ? 500 : 600)}
           height={height ?? (aspectRatio === 'portrait' ? 750 : 338)}
@@ -60,7 +60,6 @@ export default function ContentCard({
             'object-cover transition-all duration-300',
             aspectRatio === 'portrait' ? 'aspect-[2/3]' : 'aspect-video'
           )}
-          data-ai-hint={aspectRatio === 'portrait' ? content.poster.imageHint : content.thumbnail.imageHint}
         />
       </motion.div>
       <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

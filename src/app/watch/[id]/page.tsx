@@ -1,3 +1,5 @@
+'use client';
+
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { Clock, Star, Tag } from 'lucide-react';
@@ -5,34 +7,52 @@ import { Clock, Star, Tag } from 'lucide-react';
 import ContentCarousel from '@/components/content-carousel';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { contentData } from '@/lib/mock-data';
+import { useCollection, useDoc } from '@/firebase';
+import type { Content } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
 type WatchPageProps = {
   params: { id: string };
 };
 
-export function generateStaticParams() {
-  return contentData.map((content) => ({
-    id: content.id,
-  }));
-}
-
 export default function WatchPage({ params }: WatchPageProps) {
-  const content = contentData.find((c) => c.id === params.id);
+  const { data: content, loading, error } = useDoc<Content>('content', params.id);
+  
+  const { data: recommendedContent, loading: recommendedLoading } = useCollection<Content>(
+    'content', 
+    content ? { where: ['type', '==', content.type] } : undefined
+  );
 
+  if (loading) {
+      return (
+          <div className="pb-16">
+            <Skeleton className="w-full aspect-video" />
+            <div className="container mx-auto px-4 mt-8">
+                <div className="max-w-4xl mx-auto">
+                    <Skeleton className="h-12 w-3/4 mb-4" />
+                    <Skeleton className="h-6 w-1/2 mb-6" />
+                    <Skeleton className="h-24 w-full mb-12" />
+                    <Skeleton className="h-48 w-full" />
+                </div>
+            </div>
+          </div>
+      );
+  }
+
+  if (error) return <p>Error: {error.message}</p>;
   if (!content) {
     notFound();
   }
-
-  const recommendedContent = contentData.filter(
-    (c) => c.type === content.type && c.id !== content.id
-  ).slice(0, 10);
+  
+  const filteredRecommended = recommendedContent
+    .filter(c => c.id !== params.id)
+    .slice(0, 10);
 
   return (
     <div className="pb-16">
       <div className="relative w-full aspect-video bg-black">
         <Image 
-          src={content.hero?.imageUrl ?? content.thumbnail.imageUrl}
+          src={content.heroUrl ?? content.thumbnailUrl}
           alt={`Backdrop for ${content.title}`}
           fill
           className="object-cover opacity-30"
@@ -76,7 +96,7 @@ export default function WatchPage({ params }: WatchPageProps) {
 
             <Separator className="my-12" />
 
-            <ContentCarousel title="You might also like" content={recommendedContent} />
+            <ContentCarousel title="You might also like" content={filteredRecommended} loading={recommendedLoading} />
         </div>
       </div>
     </div>

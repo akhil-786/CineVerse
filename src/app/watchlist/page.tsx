@@ -1,11 +1,19 @@
+'use client';
+
 import { motion } from 'framer-motion';
 import ContentCard from '@/components/content-card';
-import { contentData } from '@/lib/mock-data';
 import { Bookmark } from 'lucide-react';
+import { useUser, useCollection } from '@/firebase';
+import type { Content } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function WatchlistPage() {
-  // Mock: first 5 items are in the watchlist
-  const watchlistContent = contentData.slice(0, 5);
+  const { user, loading: userLoading } = useUser();
+  const { data: watchlistContent, loading: contentLoading, error } = useCollection<Content>(
+    user ? `users/${user.uid}/watchlist` : ''
+  );
+
+  const isLoading = userLoading || contentLoading;
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
@@ -14,7 +22,15 @@ export default function WatchlistPage() {
         <h1 className="text-4xl font-headline font-bold">My Watchlist</h1>
       </div>
 
-      {watchlistContent.length > 0 ? (
+      {isLoading ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
+            {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="aspect-[2/3]"><Skeleton className="w-full h-full rounded-xl" /></div>
+            ))}
+          </div>
+      ) : error ? (
+        <p className="text-center text-destructive">Error loading watchlist: {error.message}</p>
+      ) : watchlistContent.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
           {watchlistContent.map((item, index) => (
             <motion.div

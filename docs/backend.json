@@ -1,0 +1,112 @@
+{
+  "entities": {
+    "Content": {
+      "title": "Content",
+      "description": "Represents a movie or anime in the catalog.",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "The title of the content."
+        },
+        "description": {
+          "type": "string",
+          "description": "A brief summary of the content."
+        },
+        "type": {
+          "type": "string",
+          "description": "The type of content.",
+          "enum": ["movie", "anime"]
+        },
+        "genre": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "A list of genres."
+        },
+        "year": {
+          "type": "number",
+          "description": "The release year."
+        },
+        "rating": {
+          "type": "number",
+          "description": "The rating of the content."
+        },
+        "duration": {
+          "type": "string",
+          "description": "The duration of the content."
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Keywords or tags associated with the content."
+        },
+        "posterUrl": {
+          "type": "string",
+          "description": "URL for the poster image."
+        },
+        "thumbnailUrl": {
+          "type": "string",
+          "description": "URL for the thumbnail image."
+        },
+        "heroUrl": {
+          "type": "string",
+          "description": "URL for the hero image."
+        },
+        "videoUrl": {
+            "type": "string",
+            "description": "URL of the video."
+        }
+      },
+      "required": ["title", "description", "type", "year", "posterUrl", "thumbnailUrl", "videoUrl"]
+    },
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Represents a user's profile.",
+      "type": "object",
+      "properties": {
+        "displayName": {
+          "type": "string",
+          "description": "The user's display name."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "The user's email address."
+        },
+        "photoURL": {
+          "type": "string",
+          "format": "uri",
+          "description": "The URL of the user's profile picture."
+        }
+      },
+      "required": ["displayName", "email"]
+    }
+  },
+  "auth": {
+    "providers": ["anonymous"]
+  },
+  "firestore": {
+    "/content/{contentId}": {
+      "schema": {
+        "$ref": "#/backend/entities/Content"
+      },
+      "description": "Stores individual content items (movies or anime)."
+    },
+    "/users/{userId}": {
+        "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+        },
+        "description": "Stores user profile information."
+    },
+    "/users/{userId}/watchlist/{contentId}": {
+        "schema": {
+            "$ref": "#/backend/entities/Content"
+        },
+        "description": "Stores items in a user's watchlist."
+    }
+  }
+}
