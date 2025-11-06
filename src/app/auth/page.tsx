@@ -1,11 +1,11 @@
 'use client';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
-import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, User } from 'firebase/auth';
+import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, User, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { doc, setDoc } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -16,22 +16,29 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import Logo from '@/components/ui/logo';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/firebase';
+import { useAuth, useFirestore } from '@/firebase';
 
-const formSchema = z.object({
+const loginSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address.' }),
   password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
 });
 
+const signupSchema = z.object({
+    displayName: z.string().min(2, { message: 'Display name must be at least 2 characters.' }),
+    email: z.string().email({ message: 'Please enter a valid email address.' }),
+    password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
+});
+
 export default function AuthPage() {
   const auth = useAuth();
+  const firestore = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
   const [user, setUser] = React.useState<User | null>(null);
+  const [isSignUp, setIsSignUp] = React.useState(false);
 
   React.useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -45,15 +52,24 @@ export default function AuthPage() {
     return () => unsubscribe();
   }, [auth, router]);
   
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm({
+    resolver: zodResolver(isSignUp ? signupSchema : loginSchema),
     defaultValues: {
+      displayName: '',
       email: '',
       password: '',
     },
   });
 
-  const handleEmailLogin = async (values: z.infer<typeof formSchema>) => {
+  const handleFormSubmit = async (values: any) => {
+    if (isSignUp) {
+      await handleEmailSignUp(values);
+    } else {
+      await handleEmailLogin(values);
+    }
+  };
+
+  const handleEmailLogin = async (values: z.infer<typeof loginSchema>) => {
     try {
       await signInWithEmailAndPassword(auth, values.email, values.password);
       toast({ title: 'Login Successful', description: 'Welcome back!' });
@@ -63,10 +79,41 @@ export default function AuthPage() {
     }
   };
 
+  const handleEmailSignUp = async (values: z.infer<typeof signupSchema>) => {
+    try {
+        const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
+        const user = userCredential.user;
+        await updateProfile(user, {
+            displayName: values.displayName
+        });
+
+        // Create user profile in Firestore
+        await setDoc(doc(firestore, "users", user.uid), {
+            displayName: values.displayName,
+            email: user.email,
+            photoURL: user.photoURL
+        });
+        
+        toast({ title: 'Sign Up Successful', description: 'Welcome to CineVerse!' });
+        router.push('/');
+    } catch (error: any) {
+        toast({ variant: 'destructive', title: 'Sign Up Failed', description: error.message });
+    }
+  };
+
   const handleGoogleLogin = async () => {
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+       // Create or update user profile in Firestore
+       await setDoc(doc(firestore, "users", user.uid), {
+            displayName: user.displayName,
+            email: user.email,
+            photoURL: user.photoURL
+        }, { merge: true });
+
       toast({ title: 'Login Successful', description: 'Welcome back!' });
       router.push('/');
     } catch (error: any) {
@@ -90,14 +137,32 @@ export default function AuthPage() {
       <Card className="w-full max-w-sm mx-auto shadow-2xl shadow-primary/10 border-white/10 bg-card/80 backdrop-blur-lg">
         <CardHeader className="text-center">
             <Logo className='justify-center mb-2'/>
-          <CardTitle className="text-2xl font-headline">Welcome Back</CardTitle>
+          <CardTitle className="text-2xl font-headline">{isSignUp ? 'Create an Account' : 'Welcome Back'}</CardTitle>
           <CardDescription>
-            Sign in to continue your journey on CineVerse
+            {isSignUp ? 'Join CineVerse today!' : 'Sign in to continue your journey on CineVerse'}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleEmailLogin)} className="grid gap-4">
+            <form onSubmit={form.handleSubmit(handleFormSubmit)} className="grid gap-4">
+               {isSignUp && (
+                <FormField
+                  control={form.control}
+                  name="displayName"
+                  render={({ field }) => (
+                    <FormItem className="grid gap-2">
+                      <FormLabel>Display Name</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="John Doe"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
               <FormField
                 control={form.control}
                 name="email"
@@ -122,12 +187,15 @@ export default function AuthPage() {
                   <FormItem className="grid gap-2">
                     <div className="flex items-center">
                       <FormLabel>Password</FormLabel>
-                      <Link
-                        href="#"
-                        className="ml-auto inline-block text-sm underline"
-                      >
-                        Forgot your password?
-                      </Link>
+                      {!isSignUp && (
+                          <button
+                            type="button"
+                            onClick={() => alert('Password reset not implemented yet.')}
+                            className="ml-auto inline-block text-sm underline"
+                          >
+                            Forgot your password?
+                          </button>
+                      )}
                     </div>
                     <FormControl>
                       <Input type="password" {...field} />
@@ -137,19 +205,19 @@ export default function AuthPage() {
                 )}
               />
               <Button type="submit" className="w-full bg-primary hover:bg-primary/80">
-                Login
+                {isSignUp ? 'Sign Up' : 'Login'}
               </Button>
             </form>
           </Form>
           <Button variant="outline" className="w-full mt-4" onClick={handleGoogleLogin}>
             <GoogleIcon />
-            Login with Google
+            {isSignUp ? 'Sign Up with Google' : 'Login with Google'}
           </Button>
           <div className="mt-4 text-center text-sm">
-            Don&apos;t have an account?{' '}
-            <Link href="#" className="underline">
-              Sign up
-            </Link>
+            {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
+            <button onClick={() => { setIsSignUp(!isSignUp); form.reset(); }} className="underline">
+              {isSignUp ? 'Login' : 'Sign up'}
+            </button>
           </div>
         </CardContent>
       </Card>
