@@ -1,3 +1,4 @@
+
 'use client';
 
 import Image from 'next/image';
@@ -57,6 +58,7 @@ export default function WatchPage({ params }: WatchPageProps) {
           fill
           className="object-cover opacity-30"
           priority
+          data-ai-hint={`${content.type} hero background`}
         />
         <div className="absolute inset-0 flex items-center justify-center">
             {/* Player Placeholder */}

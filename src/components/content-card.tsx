@@ -1,3 +1,4 @@
+
 'use client';
 
 import Image from 'next/image';
@@ -60,6 +61,7 @@ export default function ContentCard({
             'object-cover transition-all duration-300',
             aspectRatio === 'portrait' ? 'aspect-[2/3]' : 'aspect-video'
           )}
+          data-ai-hint={`${content.type} poster`}
         />
       </motion.div>
       <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
