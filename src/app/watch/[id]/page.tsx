@@ -64,10 +64,12 @@ export default function WatchPage({ params }: WatchPageProps) {
         />
         <div className="absolute inset-0 flex items-center justify-center">
             <video
+                key={content.videoUrl}
                 controls
-                src={content.videoUrl}
+                autoPlay
                 className="w-full max-w-4xl aspect-video bg-black/80 rounded-lg shadow-2xl shadow-primary/20 ring-2 ring-primary/50"
             >
+                <source src={content.videoUrl} type="video/mp4" />
                 Your browser does not support the video tag.
             </video>
         </div>
