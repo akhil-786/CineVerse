@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import Image from 'next/image';
@@ -88,15 +87,14 @@ export default function WatchPage({ params }: WatchPageProps) {
             
             <div className="mt-8">
               <h2 className="text-2xl font-headline font-bold mb-4">Watch Now</h2>
-              <video
+              <iframe
                   key={content.videoUrl}
-                  controls
-                  autoPlay
+                  src={content.videoUrl}
+                  title={content.title}
                   className="w-full aspect-video bg-black/80 rounded-lg shadow-2xl shadow-primary/20 ring-2 ring-primary/50"
-              >
-                  <source src={content.videoUrl} type="video/mp4" />
-                  Your browser does not support the video tag.
-              </video>
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+              ></iframe>
             </div>
 
             <p className="mt-8 text-neutral-300">{content.description}</p>
@@ -116,3 +114,4 @@ export default function WatchPage({ params }: WatchPageProps) {
     </div>
   );
 }
+
