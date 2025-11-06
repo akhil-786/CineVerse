@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import Image from 'next/image';
@@ -29,11 +30,12 @@ export default function WatchPage({ params }: WatchPageProps) {
   if (loading) {
       return (
           <div className="pb-16">
-            <Skeleton className="w-full aspect-video" />
+            <Skeleton className="w-full aspect-[16/7]" />
             <div className="container mx-auto px-4 mt-8">
                 <div className="max-w-4xl mx-auto">
                     <Skeleton className="h-12 w-3/4 mb-4" />
                     <Skeleton className="h-6 w-1/2 mb-6" />
+                    <Skeleton className="w-full aspect-video mb-8" />
                     <Skeleton className="h-24 w-full mb-12" />
                     <Skeleton className="h-48 w-full" />
                 </div>
@@ -53,7 +55,7 @@ export default function WatchPage({ params }: WatchPageProps) {
 
   return (
     <div className="pb-16">
-      <div className="relative w-full aspect-video bg-black">
+      <div className="relative w-full h-[40vh] md:h-[50vh] bg-black">
         <Image 
           src={content.heroUrl ?? content.thumbnailUrl}
           alt={`Backdrop for ${content.title}`}
@@ -62,22 +64,12 @@ export default function WatchPage({ params }: WatchPageProps) {
           priority
           data-ai-hint={`${content.type} hero background`}
         />
-        <div className="absolute inset-0 flex items-center justify-center">
-            <video
-                key={content.videoUrl}
-                controls
-                autoPlay
-                className="w-full max-w-4xl aspect-video bg-black/80 rounded-lg shadow-2xl shadow-primary/20 ring-2 ring-primary/50"
-            >
-                <source src={content.videoUrl} type="video/mp4" />
-                Your browser does not support the video tag.
-            </video>
-        </div>
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
       </div>
 
-      <div className="container mx-auto px-4 mt-8">
+      <div className="container mx-auto px-4 -mt-24 md:-mt-32">
         <div className="max-w-4xl mx-auto">
-            <h1 className="text-4xl md:text-5xl font-headline font-bold text-neutral-50">
+            <h1 className="text-4xl md:text-5xl font-headline font-bold text-neutral-50 drop-shadow-lg">
               {content.title}
             </h1>
             <div className="flex flex-wrap items-center gap-4 mt-4 text-muted-foreground">
@@ -93,8 +85,21 @@ export default function WatchPage({ params }: WatchPageProps) {
               <Separator orientation="vertical" className="h-4" />
               <span>{content.year}</span>
             </div>
+            
+            <div className="mt-8">
+              <h2 className="text-2xl font-headline font-bold mb-4">Watch Now</h2>
+              <video
+                  key={content.videoUrl}
+                  controls
+                  autoPlay
+                  className="w-full aspect-video bg-black/80 rounded-lg shadow-2xl shadow-primary/20 ring-2 ring-primary/50"
+              >
+                  <source src={content.videoUrl} type="video/mp4" />
+                  Your browser does not support the video tag.
+              </video>
+            </div>
 
-            <p className="mt-6 text-neutral-300">{content.description}</p>
+            <p className="mt-8 text-neutral-300">{content.description}</p>
             
             <div className="flex flex-wrap items-center gap-2 mt-6">
                 <Tag className="w-4 h-4 text-muted-foreground" />
