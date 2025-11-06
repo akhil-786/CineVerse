@@ -1,9 +1,11 @@
 
+
 'use client';
 
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { Clock, Star, Tag } from 'lucide-react';
+import * as React from 'react';
 
 import ContentCarousel from '@/components/content-carousel';
 import { Badge } from '@/components/ui/badge';
@@ -13,11 +15,12 @@ import type { Content } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
 type WatchPageProps = {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 };
 
 export default function WatchPage({ params }: WatchPageProps) {
-  const { data: content, loading, error } = useDoc<Content>('content', params.id);
+  const { id } = React.use(params);
+  const { data: content, loading, error } = useDoc<Content>('content', id);
   
   const { data: recommendedContent, loading: recommendedLoading } = useCollection<Content>(
     'content', 
@@ -46,7 +49,7 @@ export default function WatchPage({ params }: WatchPageProps) {
   }
   
   const filteredRecommended = recommendedContent
-    .filter(c => c.id !== params.id)
+    .filter(c => c.id !== id)
     .slice(0, 10);
 
   return (
