@@ -51,7 +51,9 @@ export default function UploadForm() {
             title: "",
             description: "",
             videoUrl: "",
-            category: undefined,
+            category: "movie",
+            thumbnail: undefined,
+            heroPoster: undefined,
         },
     });
 
@@ -78,6 +80,18 @@ export default function UploadForm() {
             });
         }, 2000);
     }
+
+    // A ref for the file inputs to reset them
+    const thumbnailRef = React.useRef<HTMLInputElement>(null);
+    const heroPosterRef = React.useRef<HTMLInputElement>(null);
+
+    React.useEffect(() => {
+      if (form.formState.isSubmitSuccessful) {
+        form.reset();
+        if (thumbnailRef.current) thumbnailRef.current.value = "";
+        if (heroPosterRef.current) heroPosterRef.current.value = "";
+      }
+    }, [form.formState, form]);
 
     return (
         <Card className="border-white/10 bg-card/80 backdrop-blur-lg">
@@ -168,11 +182,11 @@ export default function UploadForm() {
                             <FormField
                                 control={form.control}
                                 name="thumbnail"
-                                render={({ field: { onChange, ...rest }}) => (
+                                render={({ field: { onChange, value, ...rest }}) => (
                                 <FormItem>
                                     <FormLabel>Thumbnail Image</FormLabel>
                                     <FormControl>
-                                        <Input type="file" onChange={e => onChange(e.target.files)} {...rest} />
+                                        <Input type="file" onChange={e => onChange(e.target.files)} {...rest} ref={thumbnailRef} />
                                     </FormControl>
                                     <FormDescription>16:9 aspect ratio recommended.</FormDescription>
                                     <FormMessage />
@@ -182,11 +196,11 @@ export default function UploadForm() {
                             <FormField
                                 control={form.control}
                                 name="heroPoster"
-                                render={({ field: { onChange, ...rest } }) => (
+                                render={({ field: { onChange, value, ...rest } }) => (
                                 <FormItem>
                                     <FormLabel>Hero Poster (Optional)</FormLabel>
                                     <FormControl>
-                                         <Input type="file" onChange={e => onChange(e.target.files)} {...rest} />
+                                         <Input type="file" onChange={e => onChange(e.target.files)} {...rest} ref={heroPosterRef} />
                                     </FormControl>
                                      <FormDescription>Wide aspect ratio for hero sections.</FormDescription>
                                     <FormMessage />
