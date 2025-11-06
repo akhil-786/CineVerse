@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import Image from 'next/image';
@@ -64,10 +63,13 @@ export default function WatchPage({ params }: WatchPageProps) {
           data-ai-hint={`${content.type} hero background`}
         />
         <div className="absolute inset-0 flex items-center justify-center">
-            {/* Player Placeholder */}
-            <div className="w-full max-w-4xl aspect-video bg-black/80 rounded-lg shadow-2xl shadow-primary/20 ring-2 ring-primary/50 flex items-center justify-center">
-                <p className="text-2xl font-headline text-muted-foreground">Video Player</p>
-            </div>
+            <video
+                controls
+                src={content.videoUrl}
+                className="w-full max-w-4xl aspect-video bg-black/80 rounded-lg shadow-2xl shadow-primary/20 ring-2 ring-primary/50"
+            >
+                Your browser does not support the video tag.
+            </video>
         </div>
       </div>
 
