@@ -81,9 +81,14 @@
           "type": "string",
           "format": "uri",
           "description": "The URL of the user's profile picture."
+        },
+        "role": {
+          "type": "string",
+          "description": "The user's role.",
+          "enum": ["user", "admin"]
         }
       },
-      "required": ["displayName", "email"]
+      "required": ["displayName", "email", "role"]
     }
   },
   "auth": {

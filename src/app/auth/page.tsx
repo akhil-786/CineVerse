@@ -5,7 +5,7 @@ import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopu
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -91,7 +91,8 @@ export default function AuthPage() {
         await setDoc(doc(firestore, "users", user.uid), {
             displayName: values.displayName,
             email: user.email,
-            photoURL: user.photoURL
+            photoURL: user.photoURL,
+            role: 'user' // Default role
         });
         
         toast({ title: 'Sign Up Successful', description: 'Welcome to CineVerse!' });
@@ -106,13 +107,25 @@ export default function AuthPage() {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
+      const userDocRef = doc(firestore, 'users', user.uid);
+      const userDoc = await getDoc(userDocRef);
 
-       // Create or update user profile in Firestore
-       await setDoc(doc(firestore, "users", user.uid), {
+      if (!userDoc.exists()) {
+        // New user, create profile with default role
+        await setDoc(userDocRef, {
+            displayName: user.displayName,
+            email: user.email,
+            photoURL: user.photoURL,
+            role: 'user' // Default role
+        });
+      } else {
+        // Existing user, update profile but preserve role
+        await setDoc(userDocRef, {
             displayName: user.displayName,
             email: user.email,
             photoURL: user.photoURL
         }, { merge: true });
+      }
 
       toast({ title: 'Login Successful', description: 'Welcome back!' });
       router.push('/');

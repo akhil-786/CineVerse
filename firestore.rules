@@ -7,19 +7,27 @@ service cloud.firestore {
     match /{document=**} {
       allow read, write: if false;
     }
+    
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
 
     // Allow public read access to content
     match /content/{contentId} {
       allow read: if true;
-      allow create, update, delete: if request.auth != null; // Allow signed-in users to manage content
+      allow create, update, delete: if isAdmin(); // Allow admins to manage content
     }
 
     // Allow users to manage their own profile and watchlist
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if isOwner(userId);
       
       match /watchlist/{contentId} {
-        allow read, write: if request.auth != null && request.auth.uid == userId;
+        allow read, write: if isOwner(userId);
       }
     }
   }
