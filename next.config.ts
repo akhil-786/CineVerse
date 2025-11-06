@@ -33,6 +33,18 @@ const nextConfig: NextConfig = {
         hostname: 'm.media-amazon.com',
         port: '',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.crunchyroll.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'img.flawlessfiles.com',
+        port: '',
+        pathname: '/**',
       }
     ],
   },
