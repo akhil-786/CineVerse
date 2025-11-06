@@ -51,6 +51,7 @@ export default function UploadForm() {
             title: "",
             description: "",
             videoUrl: "",
+            category: undefined,
         },
     });
 
