@@ -1,5 +1,5 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Upload, ListManage } from 'lucide-react';
+import { Upload, List } from 'lucide-react';
 import UploadForm from "@/components/admin/upload-form";
 import ManageContentTable from "@/components/admin/manage-content-table";
 
@@ -15,7 +15,7 @@ export default function AdminPage() {
                         Upload Content
                     </TabsTrigger>
                     <TabsTrigger value="manage">
-                        <ListManage className="w-4 h-4 mr-2" />
+                        <List className="w-4 h-4 mr-2" />
                         Manage Content
                     </TabsTrigger>
                 </TabsList>
