@@ -1,1 +1,5 @@
-// Flows will be imported for their side effects in this file.
+import { config } from 'dotenv';
+config();
+
+import '@/ai/flows/auto-fetch-content-metadata.ts';
+import '@/ai/flows/content-recommendations-based-on-viewing-history.ts';
