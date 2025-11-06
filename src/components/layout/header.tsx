@@ -36,7 +36,7 @@ const navLinks = [
 
 export default function Header() {
   const pathname = usePathname();
-  const { user } = useUser();
+  const { user, userProfile } = useUser();
 
   const handleSignOut = () => {
     const auth = getAuth();
@@ -94,9 +94,11 @@ export default function Header() {
                 <DropdownMenuItem asChild>
                   <Link href="/profile"><User className="mr-2 h-4 w-4" /><span>Profile</span></Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/admin"><LayoutDashboard className="mr-2 h-4 w-4" /><span>Admin</span></Link>
-                </DropdownMenuItem>
+                {userProfile?.role === 'admin' && (
+                  <DropdownMenuItem asChild>
+                    <Link href="/admin"><LayoutDashboard className="mr-2 h-4 w-4" /><span>Admin</span></Link>
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut}>
                   <LogOut className="mr-2 h-4 w-4" /><span>Log out</span>
