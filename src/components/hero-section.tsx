@@ -29,6 +29,9 @@ export default function HeroSection({ content, loading }: HeroSectionProps) {
     return null; // Or a placeholder
   }
 
+  const hasEpisodes = content.episodes && content.episodes.length > 0;
+  const playUrl = hasEpisodes ? `/watch/${content.id}?episode=0` : `/watch/${content.id}`;
+
   return (
     <div className="relative h-[60vh] md:h-[85vh] w-full">
       <div className="absolute inset-0">
@@ -51,11 +54,27 @@ export default function HeroSection({ content, loading }: HeroSectionProps) {
           transition={{ duration: 0.8, delay: 0.2, ease: 'easeOut' }}
           className="max-w-xl text-white"
         >
+          {hasEpisodes && (
+             <motion.div 
+              className="flex flex-wrap items-center gap-2 mb-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.3, ease: 'easeOut' }}
+            >
+              {content.episodes?.map((episode, index) => (
+                <Button asChild key={index} size="sm" variant="outline" className="border-white/20 bg-black/20 text-neutral-300 backdrop-blur-sm hover:bg-primary/80 hover:text-white">
+                  <Link href={`/watch/${content.id}?episode=${index}`}>
+                    EP {index + 1}
+                  </Link>
+                </Button>
+              ))}
+            </motion.div>
+          )}
           <motion.h1 
             className="text-4xl md:text-6xl font-headline font-bold text-neutral-50 drop-shadow-xl"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3, ease: 'easeOut' }}
+            transition={{ duration: 0.8, delay: 0.4, ease: 'easeOut' }}
           >
             {content.title}
           </motion.h1>
@@ -63,7 +82,7 @@ export default function HeroSection({ content, loading }: HeroSectionProps) {
             className="flex items-center gap-4 mt-4"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4, ease: 'easeOut' }}
+            transition={{ duration: 0.8, delay: 0.5, ease: 'easeOut' }}
           >
             {content.genre.slice(0, 3).map(g => (
               <Badge key={g} variant="outline" className="border-white/20 bg-black/20 text-neutral-300 backdrop-blur-sm">
@@ -76,7 +95,7 @@ export default function HeroSection({ content, loading }: HeroSectionProps) {
             className="mt-4 text-sm md:text-base text-neutral-300 line-clamp-3"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.5, ease: 'easeOut' }}
+            transition={{ duration: 0.8, delay: 0.6, ease: 'easeOut' }}
           >
             {content.description}
           </motion.p>
@@ -84,10 +103,10 @@ export default function HeroSection({ content, loading }: HeroSectionProps) {
             className="mt-8 flex gap-4"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6, ease: 'easeOut' }}
+            transition={{ duration: 0.8, delay: 0.7, ease: 'easeOut' }}
           >
             <Button asChild size="lg" className="bg-primary hover:bg-primary/80 text-white font-bold">
-              <Link href={`/watch/${content.id}`}>
+              <Link href={playUrl}>
                 <PlayCircle className="mr-2 h-6 w-6" />
                 Play
               </Link>

@@ -1,5 +1,25 @@
 {
   "entities": {
+    "Episode": {
+      "title": "Episode",
+      "description": "Represents a single episode of a series.",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "The title of the episode."
+        },
+        "videoUrl": {
+          "type": "string",
+          "description": "URL of the episode video."
+        },
+        "thumbnailUrl": {
+          "type": "string",
+          "description": "URL for the episode thumbnail image."
+        }
+      },
+      "required": ["title", "videoUrl", "thumbnailUrl"]
+    },
     "Content": {
       "title": "Content",
       "description": "Represents a movie or anime in the catalog.",
@@ -58,7 +78,14 @@
         },
         "videoUrl": {
             "type": "string",
-            "description": "URL of the video."
+            "description": "URL of the video (for single-video content like movies)."
+        },
+        "episodes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/backend/entities/Episode"
+          },
+          "description": "A list of episodes for a series."
         }
       },
       "required": ["title", "description", "type", "year", "posterUrl", "thumbnailUrl", "videoUrl"]

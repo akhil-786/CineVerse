@@ -2,7 +2,7 @@
 'use client';
 
 import Image from 'next/image';
-import { notFound } from 'next/navigation';
+import { notFound, useSearchParams } from 'next/navigation';
 import { Clock, Star, Tag } from 'lucide-react';
 import * as React from 'react';
 
@@ -14,17 +14,29 @@ import type { Content } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
 type WatchPageProps = {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 };
 
 export default function WatchPage({ params }: WatchPageProps) {
-  const { id } = React.use(params);
+  const { id } = params;
+  const searchParams = useSearchParams();
+  const episodeIndex = searchParams.get('episode');
+
   const { data: content, loading, error } = useDoc<Content>('content', id);
   
   const { data: recommendedContent, loading: recommendedLoading } = useCollection<Content>(
     'content', 
     content ? { where: ['type', '==', content.type] } : undefined
   );
+
+  const currentVideoUrl = React.useMemo(() => {
+    if (!content) return '';
+    if (content.episodes && content.episodes.length > 0) {
+      const index = parseInt(episodeIndex ?? '0', 10);
+      return content.episodes[index]?.videoUrl ?? content.videoUrl;
+    }
+    return content.videoUrl;
+  }, [content, episodeIndex]);
 
   if (loading) {
       return (
@@ -88,8 +100,8 @@ export default function WatchPage({ params }: WatchPageProps) {
             <div className="mt-8">
               <h2 className="text-2xl font-headline font-bold mb-4">Watch Now</h2>
               <iframe
-                  key={content.videoUrl}
-                  src={content.videoUrl}
+                  key={currentVideoUrl}
+                  src={currentVideoUrl}
                   title={content.title}
                   className="w-full aspect-video bg-black/80 rounded-lg shadow-2xl shadow-primary/20 ring-2 ring-primary/50"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -114,4 +126,3 @@ export default function WatchPage({ params }: WatchPageProps) {
     </div>
   );
 }
-

@@ -1,3 +1,9 @@
+export type Episode = {
+  title: string;
+  videoUrl: string;
+  thumbnailUrl: string;
+};
+
 export type Content = {
   id: string;
   title: string;
@@ -11,7 +17,8 @@ export type Content = {
   posterUrl: string;
   thumbnailUrl: string;
   heroUrl?: string;
-  videoUrl: string;
+  videoUrl: string; // For single-video content like movies
+  episodes?: Episode[]; // For multi-episode content like anime series
 };
 
 export type UserProfile = {
