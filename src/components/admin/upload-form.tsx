@@ -436,7 +436,6 @@ export default function UploadForm({
                         <XCircle className="h-5 w-5" />
                       </Button>
 
-                      {/* Season, Episode, and EpisodeCode */}
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <FormField
                           control={form.control}
@@ -480,7 +479,6 @@ export default function UploadForm({
                         />
                       </div>
 
-                      {/* Title + URLs */}
                       <FormField
                         control={form.control}
                         name={`episodes.${index}.title`}
