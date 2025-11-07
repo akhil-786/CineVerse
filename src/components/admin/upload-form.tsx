@@ -393,7 +393,7 @@ export default function UploadForm({ isEditMode = false, initialData = null, onS
                                 
                                 <div className="space-y-4">
                                 {fields.map((field, index) => (
-                                    <div key={field.id} className="p-4 border rounded-lg space-y-4 relative">
+                                    <div key={field.id} className="p-4 border rounded-lg space-y-4 relative bg-muted/20">
                                         <Button
                                             type="button"
                                             variant="ghost"
@@ -420,7 +420,7 @@ export default function UploadForm({ isEditMode = false, initialData = null, onS
                                                 name={`episodes.${index}.episodeNumber`}
                                                 render={({ field }) => (
                                                     <FormItem>
-                                                        <FormLabel>Episode</FormLabel>
+                                                        <FormLabel>Episode No.</FormLabel>
                                                         <FormControl><Input type="number" placeholder={`${index + 1}`} {...field} /></FormControl>
                                                         <FormMessage />
                                                     </FormItem>
