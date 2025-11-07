@@ -1,4 +1,5 @@
 export type Episode = {
+  episodeNumber: number;
   title: string;
   videoUrl: string;
   thumbnailUrl: string;

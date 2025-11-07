@@ -64,7 +64,7 @@ export default function HeroSection({ content, loading }: HeroSectionProps) {
               {content.episodes?.map((episode, index) => (
                 <Button asChild key={index} size="sm" variant="outline" className="border-white/20 bg-black/20 text-neutral-300 backdrop-blur-sm hover:bg-primary/80 hover:text-white">
                   <Link href={`/watch/${content.id}?episode=${index}`}>
-                    EP {index + 1}
+                    EP {episode.episodeNumber}
                   </Link>
                 </Button>
               ))}
