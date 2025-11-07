@@ -473,7 +473,7 @@ export default function UploadForm({
                               <FormControl>
                                 <Input placeholder="e.g., 1x1" {...field} />
                               </FormControl>
-                              <FormDescription>e.g., 1x1, S1E1</FormDescription>
+                              <FormDescription>e.g., 1x1, S01E01</FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}

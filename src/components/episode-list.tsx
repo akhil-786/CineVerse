@@ -44,7 +44,7 @@ export default function EpisodeList({ contentId, episodes, currentEpisodeIndex }
               </motion.div>
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <div className="absolute top-2 left-2 bg-black/70 text-white px-2 py-1 text-sm font-bold rounded-md backdrop-blur-sm">
-                {episode.seasonNumber}x{episode.episodeNumber}
+                {episode.episodeCode || `${episode.seasonNumber}x${episode.episodeNumber}`}
               </div>
               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <PlayCircle className="w-12 h-12 text-white/80" />
