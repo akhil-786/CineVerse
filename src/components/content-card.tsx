@@ -8,6 +8,7 @@ import { PlayCircle, Star } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import type { Content } from '@/lib/types';
+import { Badge } from './ui/badge';
 
 type ContentCardProps = {
   content: Content;
@@ -66,14 +67,21 @@ export default function ContentCard({
       </motion.div>
       <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       <div className="absolute inset-0 flex flex-col justify-between p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-        <div className="flex justify-end">
-          {content.rating && (
-            <div className="flex items-center gap-1 bg-black/50 text-white text-xs font-bold py-1 px-2 rounded-full backdrop-blur-md">
-              <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-              <span>{content.rating.toFixed(1)}</span>
-            </div>
-          )}
+        
+        <div className="flex justify-between items-start">
+            {content.episodeInfo && (
+                <Badge variant="outline" className="text-xs bg-black/50 border-white/20 text-neutral-300 backdrop-blur-sm">
+                    {content.episodeInfo}
+                </Badge>
+            )}
+            {content.rating && (
+                <div className="flex items-center gap-1 bg-black/50 text-white text-xs font-bold py-1 px-2 rounded-full backdrop-blur-md ml-auto">
+                    <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
+                    <span>{content.rating.toFixed(1)}</span>
+                </div>
+            )}
         </div>
+
         <div className="flex flex-col items-center justify-center flex-grow">
           <PlayCircle className="w-16 h-16 text-white/80 group-hover:text-white group-hover:scale-110 transition-all duration-300" />
         </div>
@@ -82,6 +90,22 @@ export default function ContentCard({
           <p className="text-xs text-neutral-300">{content.year}</p>
         </div>
       </div>
+      <div className="absolute top-2 left-2 z-10 group-hover:opacity-0 transition-opacity duration-300">
+        {content.episodeInfo && (
+            <Badge variant="outline" className="text-xs bg-black/50 border-white/20 text-neutral-300 backdrop-blur-sm">
+                {content.episodeInfo}
+            </Badge>
+        )}
+      </div>
+      <div className="absolute top-2 right-2 z-10 group-hover:opacity-0 transition-opacity duration-300">
+        {content.rating && (
+            <div className="flex items-center gap-1 bg-black/50 text-white text-xs font-bold py-1 px-2 rounded-full backdrop-blur-md">
+                <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
+                <span>{content.rating.toFixed(1)}</span>
+            </div>
+        )}
+      </div>
+
     </motion.div>
   );
 }
