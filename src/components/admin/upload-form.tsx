@@ -411,7 +411,7 @@ export default function UploadForm({
                         episodeCode: `1x${fields.length + 1}`,
                         title: "",
                         videoUrl: "",
-                        thumbnailUrl: "",
+                        thumbnailUrl: "https://picsum.photos/seed/1/600/338",
                       })
                     }
                   >
