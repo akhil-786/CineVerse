@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -143,7 +142,7 @@ export default function UploadForm({
     }
 
     if (contentType === "movie") {
-      remove(); // Removes all fields
+      remove();
     }
   }, [contentType, fields.length, append, remove]);
 
@@ -220,7 +219,6 @@ export default function UploadForm({
       <CardContent className={isEditMode ? "pt-6" : ""}>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            {/* Title + Description */}
             <FormField
               control={form.control}
               name="title"
@@ -259,7 +257,6 @@ export default function UploadForm({
               </Button>
             </div>
 
-            {/* Type + Video URL */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <FormField
                 control={form.control}
@@ -302,8 +299,7 @@ export default function UploadForm({
               />
             </div>
 
-            {/* Year + Rating + Duration */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <FormField
                 control={form.control}
                 name="year"
@@ -330,23 +326,9 @@ export default function UploadForm({
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="duration"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Duration</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., 2h 30m" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </div>
 
-            {/* Genre + Tags */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <FormField
                 control={form.control}
                 name="genre"
@@ -378,9 +360,22 @@ export default function UploadForm({
                   </FormItem>
                 )}
               />
+              <FormField
+                control={form.control}
+                name="duration"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Duration</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., 2h 30m" {...field} />
+                    </FormControl>
+                    <FormDescription>e.g., 2h 30m</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
 
-            {/* URLs */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <FormField
                 control={form.control}
@@ -423,7 +418,6 @@ export default function UploadForm({
               />
             </div>
 
-            {/* Episodes Section */}
             {contentType === "anime" && fields.length > 0 && (
               <div className="space-y-6">
                 <Separator />
