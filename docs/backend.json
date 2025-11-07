@@ -5,6 +5,10 @@
       "description": "Represents a single episode of a series.",
       "type": "object",
       "properties": {
+        "seasonNumber": {
+          "type": "number",
+          "description": "The number of the season."
+        },
         "episodeNumber": {
           "type": "number",
           "description": "The number of the episode."
@@ -22,7 +26,7 @@
           "description": "URL for the episode thumbnail image."
         }
       },
-      "required": ["episodeNumber", "title", "videoUrl", "thumbnailUrl"]
+      "required": ["seasonNumber", "episodeNumber", "title", "videoUrl", "thumbnailUrl"]
     },
     "Content": {
       "title": "Content",

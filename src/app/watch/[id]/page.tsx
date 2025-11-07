@@ -12,6 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import { useCollection, useDoc } from '@/firebase';
 import type { Content } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import EpisodeList from '@/components/episode-list';
 
 type WatchPageProps = {
   params: { id: string };
@@ -20,7 +21,7 @@ type WatchPageProps = {
 export default function WatchPage({ params }: WatchPageProps) {
   const { id } = params;
   const searchParams = useSearchParams();
-  const episodeIndex = searchParams.get('episode');
+  const episodeQuery = searchParams.get('episode');
 
   const { data: content, loading, error } = useDoc<Content>('content', id);
   
@@ -28,15 +29,22 @@ export default function WatchPage({ params }: WatchPageProps) {
     'content', 
     content ? { where: ['type', '==', content.type] } : undefined
   );
+  
+  const currentEpisodeIndex = React.useMemo(() => {
+    if (!content) return 0;
+    if (content.episodes && content.episodes.length > 0) {
+      return parseInt(episodeQuery ?? '0', 10);
+    }
+    return 0;
+  }, [content, episodeQuery]);
 
   const currentVideoUrl = React.useMemo(() => {
     if (!content) return '';
     if (content.episodes && content.episodes.length > 0) {
-      const index = parseInt(episodeIndex ?? '0', 10);
-      return content.episodes[index]?.videoUrl ?? content.videoUrl;
+      return content.episodes[currentEpisodeIndex]?.videoUrl ?? content.videoUrl;
     }
     return content.videoUrl;
-  }, [content, episodeIndex]);
+  }, [content, currentEpisodeIndex]);
 
   if (loading) {
       return (
@@ -117,6 +125,13 @@ export default function WatchPage({ params }: WatchPageProps) {
                     <Badge key={tag} variant="secondary">{tag}</Badge>
                 ))}
             </div>
+            
+            {content.episodes && content.episodes.length > 0 && (
+                <>
+                    <Separator className="my-12" />
+                    <EpisodeList contentId={id} episodes={content.episodes} currentEpisodeIndex={currentEpisodeIndex} />
+                </>
+            )}
 
             <Separator className="my-12" />
 
