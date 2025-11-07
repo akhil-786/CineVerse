@@ -468,7 +468,7 @@ export default function UploadForm({ isEditMode = false, initialData = null, onS
 
                         <Button type="submit" size="lg" disabled={form.formState.isSubmitting}>
                             <UploadCloud className="w-4 h-4 mr-2" />
-                            {form.formState.isSubmitting ? (isEditMode ? 'Saving...' : 'Uploading...') : 'Save Changes'}
+                            {form.formState.isSubmitting ? (isEditMode ? 'Saving...' : 'Uploading...') : (isEditMode ? 'Save Changes' : 'Upload Content')}
                         </Button>
                     </form>
                 </Form>
@@ -476,5 +476,3 @@ export default function UploadForm({ isEditMode = false, initialData = null, onS
         </Wrapper>
     );
 }
-
-    
