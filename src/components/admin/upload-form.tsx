@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Sparkles, UploadCloud } from "lucide-react";
-import { addDoc, collection } from "firebase/firestore";
+import { addDoc, collection, doc, updateDoc } from "firebase/firestore";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -36,8 +36,10 @@ import {
 } from "../ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useFirestore } from "@/firebase";
+import type { Content } from "@/lib/types";
 
 const formSchema = z.object({
+  id: z.string().optional(),
   title: z.string().min(2, "Title must be at least 2 characters.").max(100),
   description: z.string().min(10, "Description must be at least 10 characters."),
   type: z.enum(["anime", "movie"]),
@@ -54,47 +56,82 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export default function UploadForm() {
+type UploadFormProps = {
+    isEditMode?: boolean;
+    initialData?: Content | null;
+    onSuccess?: () => void;
+}
+
+export default function UploadForm({ isEditMode = false, initialData = null, onSuccess }: UploadFormProps) {
     const { toast } = useToast();
     const firestore = useFirestore();
 
+    const defaultValues = {
+        title: "",
+        description: "",
+        videoUrl: "",
+        type: "movie" as "anime" | "movie",
+        year: new Date().getFullYear(),
+        genre: "",
+        tags: "",
+        posterUrl: "https://picsum.photos/seed/1/500/750",
+        thumbnailUrl: "https://picsum.photos/seed/1/600/338",
+        heroUrl: "https://picsum.photos/seed/1/1280/720",
+        duration: "",
+        rating: 0,
+    };
+
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
-        defaultValues: {
-            title: "",
-            description: "",
-            videoUrl: "",
-            type: "movie",
-            year: new Date().getFullYear(),
-            genre: "",
-            tags: "",
-            posterUrl: "https://picsum.photos/seed/1/500/750",
-            thumbnailUrl: "https://picsum.photos/seed/1/600/338",
-            heroUrl: "https://picsum.photos/seed/1/1280/720",
-            duration: "",
-            rating: 0,
-        },
+        defaultValues: isEditMode && initialData ? {
+            ...initialData,
+            genre: initialData.genre.join(', '),
+            tags: initialData.tags.join(', '),
+        } : defaultValues,
     });
+    
+    React.useEffect(() => {
+        if (isEditMode && initialData) {
+            form.reset({
+                ...initialData,
+                genre: initialData.genre.join(', '),
+                tags: initialData.tags.join(', '),
+            });
+        }
+    }, [initialData, isEditMode, form]);
+
 
     async function onSubmit(values: FormValues) {
         try {
-            const contentCollection = collection(firestore, 'content');
-            await addDoc(contentCollection, {
+            const dataToSave = {
                 ...values,
                 genre: values.genre.split(',').map(g => g.trim()),
                 tags: values.tags.split(',').map(t => t.trim()),
-            });
-            toast({
-                title: "Content Uploaded",
-                description: `${values.title} has been successfully added.`,
-            });
-            form.reset();
+            }
+
+            if (isEditMode && initialData?.id) {
+                const contentDocRef = doc(firestore, 'content', initialData.id);
+                await updateDoc(contentDocRef, dataToSave);
+                 toast({
+                    title: "Content Updated",
+                    description: `${values.title} has been successfully updated.`,
+                });
+            } else {
+                const contentCollection = collection(firestore, 'content');
+                await addDoc(contentCollection, dataToSave);
+                toast({
+                    title: "Content Uploaded",
+                    description: `${values.title} has been successfully added.`,
+                });
+                form.reset(defaultValues);
+            }
+            onSuccess?.();
         } catch (error) {
-            console.error("Error adding document: ", error);
+            console.error("Error saving document: ", error);
             toast({
                 variant: 'destructive',
-                title: "Upload Failed",
-                description: "There was an error uploading the content.",
+                title: "Save Failed",
+                description: "There was an error saving the content.",
             });
         }
     }
@@ -113,14 +150,19 @@ export default function UploadForm() {
             });
         }, 2000);
     }
+    
+    const Wrapper = isEditMode ? 'div' : Card;
+    const wrapperProps = isEditMode ? {} : { className: "border-white/10 bg-card/80 backdrop-blur-lg" };
 
     return (
-        <Card className="border-white/10 bg-card/80 backdrop-blur-lg">
-            <CardHeader>
-                <CardTitle>Upload New Content</CardTitle>
-                <CardDescription>Fill in the details for the new movie or anime.</CardDescription>
-            </CardHeader>
-            <CardContent>
+        <Wrapper {...wrapperProps}>
+            {!isEditMode && (
+                 <CardHeader>
+                    <CardTitle>Upload New Content</CardTitle>
+                    <CardDescription>Fill in the details for the new movie or anime.</CardDescription>
+                </CardHeader>
+            )}
+            <CardContent className={isEditMode ? 'pt-6' : ''}>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                         <FormField
@@ -157,7 +199,7 @@ export default function UploadForm() {
                             />
                             <Button type="button" variant="outline" onClick={onAutoFetch}>
                                 <Sparkles className="w-4 h-4 mr-2" />
-                                Auto-fetch metadata
+                                Auto-fetch
                             </Button>
                         </div>
                        
@@ -168,7 +210,7 @@ export default function UploadForm() {
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Category</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <Select onValueChange={field.onChange} value={field.value}>
                                             <FormControl>
                                                 <SelectTrigger>
                                                     <SelectValue placeholder="Select a category" />
@@ -315,11 +357,11 @@ export default function UploadForm() {
 
                         <Button type="submit" size="lg" disabled={form.formState.isSubmitting}>
                             <UploadCloud className="w-4 h-4 mr-2" />
-                            {form.formState.isSubmitting ? 'Uploading...' : 'Save and Upload'}
+                            {form.formState.isSubmitting ? (isEditMode ? 'Saving...' : 'Uploading...') : 'Save Changes'}
                         </Button>
                     </form>
                 </Form>
             </CardContent>
-        </Card>
+        </Wrapper>
     );
 }
