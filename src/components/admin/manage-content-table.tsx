@@ -143,9 +143,13 @@ export default function ManageContentTable() {
                     </DialogHeader>
                     {selectedContent && (
                         <UploadForm
+                            key={selectedContent.id}
                             isEditMode={true}
                             initialData={selectedContent}
-                            onSuccess={() => setIsEditDialogOpen(false)}
+                            onSuccess={() => {
+                                setIsEditDialogOpen(false);
+                                setSelectedContent(null);
+                            }}
                         />
                     )}
                 </DialogContent>

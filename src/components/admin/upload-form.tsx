@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -129,10 +130,7 @@ export default function UploadForm({
     }
   }, [initialData, isEditMode, form]);
 
-  // This new hook automatically adds the first episode block
-  // when "Anime" is selected and no episodes are present.
   React.useEffect(() => {
-    // Add the first episode block if "Anime" is selected and no fields exist
     if (contentType === "anime" && fields.length === 0) {
       append({
         seasonNumber: 1,
@@ -144,20 +142,21 @@ export default function UploadForm({
       });
     }
 
-    // Clear all episode fields if the user switches back to "Movie"
-    if (contentType === "movie" && fields.length > 0) {
+    if (contentType === "movie") {
       remove(); // Removes all fields
     }
   }, [contentType, fields.length, append, remove]);
 
   async function onSubmit(values: FormValues) {
     try {
-      const dataToSave = {
+      const dataToSave: Omit<Content, 'id'> & { id?: string } = {
         ...values,
         genre: values.genre.split(",").map((g) => g.trim()),
         tags: values.tags.split(",").map((t) => t.trim()),
         episodes: values.type === "anime" ? values.episodes : [],
       };
+      
+      delete dataToSave.id;
 
       if (isEditMode && initialData?.id) {
         const contentDocRef = doc(firestore, "content", initialData.id);
