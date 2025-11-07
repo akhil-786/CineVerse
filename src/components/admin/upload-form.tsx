@@ -384,7 +384,7 @@ export default function UploadForm({ isEditMode = false, initialData = null, onS
                                         type="button"
                                         variant="outline"
                                         size="sm"
-                                        onClick={() => append({ seasonNumber: 1, episodeNumber: fields.length + 1, title: '', videoUrl: '', thumbnailUrl: '' })}
+                                        onClick={() => append({ seasonNumber: 1, episodeNumber: fields.length + 1, title: '', videoUrl: '', thumbnailUrl: 'https://picsum.photos/seed/1/600/338' })}
                                     >
                                         <PlusCircle className="mr-2 h-4 w-4" />
                                         Add Episode
@@ -476,3 +476,5 @@ export default function UploadForm({ isEditMode = false, initialData = null, onS
         </Wrapper>
     );
 }
+
+    
