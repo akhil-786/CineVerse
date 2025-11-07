@@ -56,6 +56,7 @@ const formSchema = z.object({
   type: z.enum(["anime", "movie"]),
   year: z.coerce.number().min(1900).max(new Date().getFullYear() + 1),
   rating: z.coerce.number().min(0).max(10).optional(),
+  numberOfEpisodes: z.coerce.number().optional(),
   duration: z.string().optional(),
   genre: z.string(),
   tags: z.string(),
@@ -95,6 +96,7 @@ export default function UploadForm({
     heroUrl: "https://picsum.photos/seed/1/1280/720",
     duration: "",
     rating: 0,
+    numberOfEpisodes: 0,
     episodes: [],
   };
 
@@ -129,7 +131,10 @@ export default function UploadForm({
     }
   }, [initialData, isEditMode, form]);
 
+  // This new hook automatically adds the first episode block
+  // when "Anime" is selected and no episodes are present.
   React.useEffect(() => {
+    // Add the first episode block if "Anime" is selected and no fields exist
     if (contentType === "anime" && fields.length === 0) {
       append({
         seasonNumber: 1,
@@ -141,25 +146,24 @@ export default function UploadForm({
       });
     }
 
-    if (contentType === "movie") {
-      remove();
+    // Clear all episode fields if the user switches back to "Movie"
+    if (contentType === "movie" && fields.length > 0) {
+      remove(); // Removes all fields
     }
   }, [contentType, fields.length, append, remove]);
 
   async function onSubmit(values: FormValues) {
     try {
-      const dataToSave: Omit<Content, 'id'> & { id?: string } = {
+      const dataToSave: Omit<Content, 'id'> = {
         ...values,
         genre: values.genre.split(",").map((g) => g.trim()),
         tags: values.tags.split(",").map((t) => t.trim()),
         episodes: values.type === "anime" ? values.episodes : [],
       };
-      
-      delete dataToSave.id;
 
       if (isEditMode && initialData?.id) {
         const contentDocRef = doc(firestore, "content", initialData.id);
-        await updateDoc(contentDocRef, dataToSave);
+        await updateDoc(contentDocRef, dataToSave as any);
         toast({
           title: "Content Updated",
           description: `${values.title} has been successfully updated.`,
@@ -219,6 +223,7 @@ export default function UploadForm({
       <CardContent className={isEditMode ? "pt-6" : ""}>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            {/* Title + Description */}
             <FormField
               control={form.control}
               name="title"
@@ -257,6 +262,7 @@ export default function UploadForm({
               </Button>
             </div>
 
+            {/* Type + Video URL */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <FormField
                 control={form.control}
@@ -299,7 +305,8 @@ export default function UploadForm({
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Year + Rating + Episodes */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <FormField
                 control={form.control}
                 name="year"
@@ -326,8 +333,22 @@ export default function UploadForm({
                   </FormItem>
                 )}
               />
+              <FormField
+                control={form.control}
+                name="numberOfEpisodes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Number of Episodes</FormLabel>
+                    <FormControl>
+                      <Input type="number" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
 
+            {/* Genre + Tags + Duration */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <FormField
                 control={form.control}
@@ -376,6 +397,7 @@ export default function UploadForm({
               />
             </div>
 
+            {/* URLs */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <FormField
                 control={form.control}
@@ -418,6 +440,7 @@ export default function UploadForm({
               />
             </div>
 
+            {/* Episodes Section */}
             {contentType === "anime" && fields.length > 0 && (
               <div className="space-y-6">
                 <Separator />
