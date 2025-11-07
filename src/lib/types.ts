@@ -22,6 +22,7 @@ export type Content = {
   heroUrl?: string;
   videoUrl: string; // For single-video content like movies
   episodes?: Episode[]; // For multi-episode content like anime series
+  episodeInfo?: string;
 };
 
 export type UserProfile = {

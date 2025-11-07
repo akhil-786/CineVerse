@@ -64,6 +64,7 @@ const formSchema = z.object({
   heroUrl: z.string().url().optional(),
   videoUrl: z.string().url("Please enter a valid URL."),
   episodes: z.array(episodeSchema).optional(),
+  episodeInfo: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -96,6 +97,7 @@ export default function UploadForm({
     duration: "",
     rating: 0,
     episodes: [],
+    episodeInfo: "",
   };
 
   const form = useForm<FormValues>({
@@ -107,6 +109,7 @@ export default function UploadForm({
             genre: initialData.genre.join(", "),
             tags: initialData.tags.join(", "),
             episodes: initialData.episodes ?? [],
+            episodeInfo: initialData.episodeInfo ?? "",
           }
         : defaultValues,
   });
@@ -125,6 +128,7 @@ export default function UploadForm({
         genre: initialData.genre.join(", "),
         tags: initialData.tags.join(", "),
         episodes: initialData.episodes ?? [],
+        episodeInfo: initialData.episodeInfo ?? "",
       });
     }
   }, [initialData, isEditMode, form]);
@@ -296,9 +300,9 @@ export default function UploadForm({
                 )}
               />
             </div>
-
+            
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <FormField
+               <FormField
                 control={form.control}
                 name="year"
                 render={({ field }) => (
@@ -324,14 +328,14 @@ export default function UploadForm({
                   </FormItem>
                 )}
               />
-               <FormField
+              <FormField
                 control={form.control}
-                name="duration"
+                name="episodeInfo"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Duration</FormLabel>
+                    <FormLabel>Episode Info</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g., 2h 30m" {...field} />
+                      <Input placeholder="e.g., 1x1 or 24 Episodes" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -339,7 +343,7 @@ export default function UploadForm({
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <FormField
                 control={form.control}
                 name="genre"
@@ -371,7 +375,21 @@ export default function UploadForm({
                   </FormItem>
                 )}
               />
+               <FormField
+                control={form.control}
+                name="duration"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Duration</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., 2h 30m" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
+
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <FormField

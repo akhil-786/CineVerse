@@ -49,15 +49,15 @@ export default function HeroSection({ content, loading }: HeroSectionProps) {
         <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent" />
       </div>
 
-      {/* Episode badges on top of hero */}
-      {hasEpisodes && (
-        <motion.div
-          className="absolute top-6 left-6 flex flex-wrap gap-2 z-20"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2, ease: 'easeOut' }}
-        >
-          {content.episodes?.map((episode, index) => (
+      <motion.div
+        className="absolute top-6 left-6 flex flex-wrap gap-2 z-20"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 0.2, ease: 'easeOut' }}
+      >
+        {/* Badges for individual episodes */}
+        {hasEpisodes &&
+          content.episodes?.map((episode, index) => (
             <Link
               key={index}
               href={`/watch/${content.id}?episode=${index}`}
@@ -67,8 +67,13 @@ export default function HeroSection({ content, loading }: HeroSectionProps) {
                 `S${episode.seasonNumber}E${episode.episodeNumber}`}
             </Link>
           ))}
-        </motion.div>
-      )}
+        {/* Badge for general episode info */}
+        {!hasEpisodes && content.episodeInfo && (
+          <div className="px-3 py-1 rounded-full text-sm font-semibold text-white bg-black/60 border border-white/20 backdrop-blur-md">
+            {content.episodeInfo}
+          </div>
+        )}
+      </motion.div>
 
       {/* Foreground Content */}
       <div className="relative z-10 h-full flex flex-col justify-end pb-12 md:pb-24 container mx-auto px-4">
