@@ -50,7 +50,9 @@ const episodeSchema = z.object({
 const formSchema = z.object({
   id: z.string().optional(),
   title: z.string().min(2, "Title must be at least 2 characters.").max(100),
-  description: z.string().min(10, "Description must be at least 10 characters."),
+  description: z
+    .string()
+    .min(10, "Description must be at least 10 characters."),
   type: z.enum(["anime", "movie"]),
   year: z.coerce.number().min(1900).max(new Date().getFullYear() + 1),
   rating: z.coerce.number().min(0).max(10).optional(),
@@ -114,6 +116,8 @@ export default function UploadForm({
     name: "episodes",
   });
 
+  const contentType = form.watch("type");
+
   React.useEffect(() => {
     if (isEditMode && initialData) {
       form.reset({
@@ -124,6 +128,27 @@ export default function UploadForm({
       });
     }
   }, [initialData, isEditMode, form]);
+
+  // This new hook automatically adds the first episode block
+  // when "Anime" is selected and no episodes are present.
+  React.useEffect(() => {
+    // Add the first episode block if "Anime" is selected and no fields exist
+    if (contentType === "anime" && fields.length === 0) {
+      append({
+        seasonNumber: 1,
+        episodeNumber: 1,
+        episodeCode: "1x1",
+        title: "",
+        videoUrl: "",
+        thumbnailUrl: "https://picsum.photos/seed/1/600/338",
+      });
+    }
+
+    // Clear all episode fields if the user switches back to "Movie"
+    if (contentType === "movie" && fields.length > 0) {
+      remove(); // Removes all fields
+    }
+  }, [contentType, fields.length, append, remove]);
 
   async function onSubmit(values: FormValues) {
     try {
@@ -182,7 +207,6 @@ export default function UploadForm({
   const wrapperProps = isEditMode
     ? {}
     : { className: "border-white/10 bg-card/80 backdrop-blur-lg" };
-  const contentType = form.watch("type");
 
   return (
     <Wrapper {...wrapperProps}>
@@ -268,7 +292,10 @@ export default function UploadForm({
                       Video URL {contentType === "anime" && "(Fallback)"}
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="https://example.com/video.mp4" {...field} />
+                      <Input
+                        placeholder="https://example.com/video.mp4"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -328,7 +355,10 @@ export default function UploadForm({
                   <FormItem>
                     <FormLabel>Genre</FormLabel>
                     <FormControl>
-                      <Input placeholder="Action, Fantasy, Adventure" {...field} />
+                      <Input
+                        placeholder="Action, Fantasy, Adventure"
+                        {...field}
+                      />
                     </FormControl>
                     <FormDescription>Comma-separated genres.</FormDescription>
                     <FormMessage />
@@ -395,7 +425,7 @@ export default function UploadForm({
             </div>
 
             {/* Episodes Section */}
-            {contentType === "anime" && (
+            {contentType === "anime" && fields.length > 0 && (
               <div className="space-y-6">
                 <Separator />
                 <div className="flex items-center justify-between">
@@ -457,7 +487,11 @@ export default function UploadForm({
                             <FormItem>
                               <FormLabel>Episode No.</FormLabel>
                               <FormControl>
-                                <Input type="number" placeholder={`${index + 1}`} {...field} />
+                                <Input
+                                  type="number"
+                                  placeholder={`${index + 1}`}
+                                  {...field}
+                                />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -524,7 +558,11 @@ export default function UploadForm({
               </div>
             )}
 
-            <Button type="submit" size="lg" disabled={form.formState.isSubmitting}>
+            <Button
+              type="submit"
+              size="lg"
+              disabled={form.formState.isSubmitting}
+            >
               <UploadCloud className="w-4 h-4 mr-2" />
               {form.formState.isSubmitting
                 ? isEditMode
