@@ -29,13 +29,14 @@ export default function HeroSection({ content, loading }: HeroSectionProps) {
   }
 
   const hasEpisodes = content.episodes && content.episodes.length > 0;
+  const hasEpisodeCount = content.numberOfEpisodes && content.numberOfEpisodes > 0;
   const playUrl = hasEpisodes
     ? `/watch/${content.id}?episode=0`
     : `/watch/${content.id}`;
 
   return (
     <div className="relative h-[60vh] md:h-[85vh] w-full overflow-hidden">
-      {/* ✅ Background Image */}
+      {/* Background Image */}
       <div className="absolute inset-0">
         <Image
           src={content.heroUrl ?? content.posterUrl}
@@ -49,29 +50,34 @@ export default function HeroSection({ content, loading }: HeroSectionProps) {
         <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent" />
       </div>
 
-      {/* ✅ Episode badges on top-left of hero */}
-      {hasEpisodes && (
+      {/* Episode badges or count */}
+      {(hasEpisodes || hasEpisodeCount) && (
         <motion.div
           className="absolute top-6 left-6 flex flex-wrap gap-2 z-20"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2, ease: 'easeOut' }}
         >
-          {content.episodes.map((episode, index) => (
-            <Link
-              key={index}
-              href={`/watch/${content.id}?episode=${index}`}
-              className="px-3 py-1 rounded-full text-sm font-semibold text-white bg-black/60 border border-white/20 backdrop-blur-md hover:bg-primary/70 hover:text-white transition-all"
-            >
-              {/* Prefer episodeCode (like "1x1"), fallback to S/E format */}
-              {episode.episodeCode ||
-                `S${episode.seasonNumber}E${episode.episodeNumber}`}
-            </Link>
-          ))}
+          {hasEpisodes ? (
+            content.episodes.map((episode, index) => (
+              <Link
+                key={index}
+                href={`/watch/${content.id}?episode=${index}`}
+                className="px-3 py-1 rounded-full text-sm font-semibold text-white bg-black/60 border border-white/20 backdrop-blur-md hover:bg-primary/70 hover:text-white transition-all"
+              >
+                {episode.episodeCode ||
+                  `S${episode.seasonNumber}E${episode.episodeNumber}`}
+              </Link>
+            ))
+          ) : hasEpisodeCount ? (
+            <div className="px-3 py-1 rounded-full text-sm font-semibold text-white bg-black/60 border border-white/20 backdrop-blur-md">
+              {content.numberOfEpisodes} Episodes
+            </div>
+          ) : null}
         </motion.div>
       )}
 
-      {/* ✅ Foreground Text and Buttons */}
+      {/* Foreground Content */}
       <div className="relative z-10 h-full flex flex-col justify-end pb-12 md:pb-24 container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -79,7 +85,6 @@ export default function HeroSection({ content, loading }: HeroSectionProps) {
           transition={{ duration: 0.8, delay: 0.3, ease: 'easeOut' }}
           className="max-w-xl text-white"
         >
-          {/* Title */}
           <motion.h1
             className="text-4xl md:text-6xl font-headline font-bold text-neutral-50 drop-shadow-xl"
             initial={{ opacity: 0, y: 20 }}
@@ -89,7 +94,6 @@ export default function HeroSection({ content, loading }: HeroSectionProps) {
             {content.title}
           </motion.h1>
 
-          {/* Genre + Year */}
           <motion.div
             className="flex items-center gap-4 mt-4"
             initial={{ opacity: 0, y: 20 }}
@@ -108,7 +112,6 @@ export default function HeroSection({ content, loading }: HeroSectionProps) {
             <span className="text-neutral-300 text-sm">{content.year}</span>
           </motion.div>
 
-          {/* Description */}
           <motion.p
             className="mt-4 text-sm md:text-base text-neutral-300 line-clamp-3"
             initial={{ opacity: 0, y: 20 }}
@@ -118,7 +121,6 @@ export default function HeroSection({ content, loading }: HeroSectionProps) {
             {content.description}
           </motion.p>
 
-          {/* Buttons */}
           <motion.div
             className="mt-8 flex gap-4"
             initial={{ opacity: 0, y: 20 }}
