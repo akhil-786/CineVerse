@@ -13,6 +13,10 @@
           "type": "number",
           "description": "The number of the episode."
         },
+        "episodeCode": {
+          "type": "string",
+          "description": "A formatted episode code (e.g., '1x1' or 'S01E01')."
+        },
         "title": {
           "type": "string",
           "description": "The title of the episode."
@@ -26,7 +30,7 @@
           "description": "URL for the episode thumbnail image."
         }
       },
-      "required": ["seasonNumber", "episodeNumber", "title", "videoUrl", "thumbnailUrl"]
+      "required": ["seasonNumber", "episodeNumber", "episodeCode", "title", "videoUrl", "thumbnailUrl"]
     },
     "Content": {
       "title": "Content",
