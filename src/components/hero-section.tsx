@@ -29,7 +29,6 @@ export default function HeroSection({ content, loading }: HeroSectionProps) {
   }
 
   const hasEpisodes = content.episodes && content.episodes.length > 0;
-  const hasEpisodeCount = content.numberOfEpisodes && content.numberOfEpisodes > 0;
   const playUrl = hasEpisodes
     ? `/watch/${content.id}?episode=0`
     : `/watch/${content.id}`;
@@ -50,30 +49,24 @@ export default function HeroSection({ content, loading }: HeroSectionProps) {
         <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent" />
       </div>
 
-      {/* Episode badges or count */}
-      {(hasEpisodes || hasEpisodeCount) && (
+      {/* Episode badges on top of hero */}
+      {hasEpisodes && (
         <motion.div
           className="absolute top-6 left-6 flex flex-wrap gap-2 z-20"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2, ease: 'easeOut' }}
         >
-          {hasEpisodes ? (
-            content.episodes.map((episode, index) => (
-              <Link
-                key={index}
-                href={`/watch/${content.id}?episode=${index}`}
-                className="px-3 py-1 rounded-full text-sm font-semibold text-white bg-black/60 border border-white/20 backdrop-blur-md hover:bg-primary/70 hover:text-white transition-all"
-              >
-                {episode.episodeCode ||
-                  `S${episode.seasonNumber}E${episode.episodeNumber}`}
-              </Link>
-            ))
-          ) : hasEpisodeCount ? (
-            <div className="px-3 py-1 rounded-full text-sm font-semibold text-white bg-black/60 border border-white/20 backdrop-blur-md">
-              {content.numberOfEpisodes} Episodes
-            </div>
-          ) : null}
+          {content.episodes?.map((episode, index) => (
+            <Link
+              key={index}
+              href={`/watch/${content.id}?episode=${index}`}
+              className="px-3 py-1 rounded-full text-sm font-semibold text-white bg-black/60 border border-white/20 backdrop-blur-md hover:bg-primary/70 hover:text-white transition-all"
+            >
+              {episode.episodeCode ||
+                `S${episode.seasonNumber}E${episode.episodeNumber}`}
+            </Link>
+          ))}
         </motion.div>
       )}
 

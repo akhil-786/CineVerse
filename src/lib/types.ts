@@ -16,7 +16,6 @@ export type Content = {
   year: number;
   rating?: number;
   duration?: string;
-  numberOfEpisodes?: number;
   tags: string[];
   posterUrl: string;
   thumbnailUrl: string;
